@@ -20,7 +20,6 @@
 
 int iTmp102Address = 0x48;
 int iDelay = 1000;
-int iTempReceived = 0;
 String readString;
 
 
@@ -61,9 +60,7 @@ int readSerialInputCommand(String *command)
 	
 	 }while(serialInByte != '#' && Serial.available());//until '#' comes up and serial data is avaible
    
-	 
-	 
-	 
+	
 	 if(((String)(*command)).indexOf('#') < 1) 
 	 {
 	   operationStatus = ERR_SERIAL_IN_COMMAND_NOT_TERMINATED;
@@ -85,48 +82,24 @@ void loop()
 
 	String command = "";  //Used to store the latest received command
 	int serialResult = 0; //return value for reading operation method on serial in put buffer
-  
 	serialResult = readSerialInputCommand(&command);
 
-	if(serialResult == WRG_NO_SERIAL_DATA_AVAIBLE)
-	{//If there is no data avaible at the serial port, let the LED blink
-		digitalWrite(LED_PIN, HIGH);
-		//delay(250);
-		delay(iDelay);
-		digitalWrite(LED_PIN, LOW);
-		delay(100);
-		
-	}
-	else
+	if(serialResult == ERR_SERIAL_IN_COMMAND_NOT_TERMINATED)		//If the command format was invalid, the led is turned off for two seconds
 	{
-		if(serialResult == ERR_SERIAL_IN_COMMAND_NOT_TERMINATED)
-		{//If the command format was invalid, the led is turned off for two seconds
-			digitalWrite(LED_PIN, HIGH);
-			delay(2000);
-			digitalWrite(LED_PIN, LOW);
-		}
-			
-		  
-			//delay(1000);
-		if(serialResult == MSG_METHOD_SUCCESS)
-		{
-			//Serial.print(serialResult);
-			
-			
-			char chTempDelay[command.length() + 1];
-			command.toCharArray(chTempDelay, sizeof(chTempDelay));
-			iDelay = atoi(chTempDelay); 
-		   
-			command = command.substring(0, command.length() - 1);
-			//Serial.println(command);
-			Serial.println(iDelay);
-		}
-	
-	
+		digitalWrite(LED_PIN, HIGH);
+		delay(2000);
+		digitalWrite(LED_PIN, LOW);
 	}
-
-
-	//delay(iDelay); 
+				
+	if(serialResult == MSG_METHOD_SUCCESS)
+	{	
+		command = command.substring(0, command.length() - 1);		//removes "#" character at the end of the received command 
+		char chTempDelay[command.length() + 1];						//translates string to int for delay function	
+		command.toCharArray(chTempDelay, sizeof(chTempDelay));
+		iDelay = atoi(chTempDelay); 
+	}
+	
+	delay(iDelay); 
 }
 
 
